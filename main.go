@@ -173,7 +173,7 @@ func main() {
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
 	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")
-	router.HandleFunc("/getallblogs", GetAllBlogs).Methods("GET")
+	router.HandleFunc("/api/getallblogs", GetAllBlogs).Methods("GET")
 
 	fmt.Println("Web-services are starting")
 	log.Fatal(http.ListenAndServe(":8087", router))
