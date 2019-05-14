@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: regblogs-backend-service
+spec:
+  selector:
+    app: regblogs
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: goport

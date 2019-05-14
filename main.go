@@ -46,11 +46,36 @@ type Blogs struct {
 	Html_code			string	`json:"html_code"`
 }
 
+type HealthCheck struct {
+	Response  string `json:"response"`
+}
+
 var people []Person
+
+
+// Application HealthCheck
+func GetAppHealthCheck(w http.ResponseWriter, r *http.Request) {
+	setupResponse(&w, r)
+
+	if (*r).Method == "GET" {
+
+	}else if (*r).Method == "POST" {
+		fmt.Println("NOT ALLOW for this method")
+	}
+
+	fmt.Println(("GET method for healthcheck endpoint is working"))
+	var healthCheck HealthCheck
+	healthCheck.Response = "OK"
+	json.NewEncoder(w).Encode(healthCheck)
+
+}
+
 
 // Display all from the people var
 func GetPeople(w http.ResponseWriter, r *http.Request) {
 	setupResponse(&w, r)
+
+	fmt.Println("/people is executing")
 
 	if (*r).Method == "GET" {
 
@@ -68,10 +93,14 @@ func GetPeople(w http.ResponseWriter, r *http.Request) {
 func GetAllBlogs(w http.ResponseWriter, r *http.Request) {
 	setupResponse(&w, r)
 
-	if (*r).Method == "POST" {
+	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	//w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	//w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	}else if (*r).Method == "GET" {
+	if (*r).Method == "POST" {
 		fmt.Println("NOT ALLOW for this method")
+	}else if (*r).Method == "GET" {
+
 	}
 
 	blogs := connectAndQueryBlog()
@@ -122,6 +151,7 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 func setupResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	//(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
@@ -164,16 +194,17 @@ func connectAndQueryBlog() []Blogs {
 
 // main function to boot up everything
 func main() {
-	fmt.Println("Prepare web-services")
+	fmt.Println("Prepare web-services latest")
 	//log.Fatal("TEST12345")
 	router := mux.NewRouter()
 	people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
 	people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
-	router.HandleFunc("/people", GetPeople).Methods("GET")
+	router.HandleFunc("/api/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
 	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")
 	router.HandleFunc("/api/getallblogs", GetAllBlogs).Methods("GET")
+	router.HandleFunc("/App-HealthCheck", GetAppHealthCheck).Methods("GET")
 
 	fmt.Println("Web-services are starting")
 	log.Fatal(http.ListenAndServe(":8087", router))

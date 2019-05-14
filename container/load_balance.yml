@@ -1,0 +1,14 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: http-lb-pomt-new999
+spec:
+  type: LoadBalancer
+  selector:
+    app: regblogs
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: goport

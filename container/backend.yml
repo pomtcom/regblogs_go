@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: regblogs
+  labels:
+    app: regblogs
+spec:
+  containers:
+  - name: k8s-newgo
+    image: pomtcom/k8s-newgo
+    # image: wardviaene/k8s-demo
+    ports:
+    - name: goport
+      containerPort: 8087
+      
