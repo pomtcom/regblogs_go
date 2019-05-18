@@ -1,20 +1,24 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"fmt"
 	//"log"
 	"net/http"
-	"fmt"
 	//"log"
 	//"log"
 
 	"gopkg.in/mgo.v2"
 	//"gopkg.in/mgo.v2/bson"
 
-	"time"
-	"log"
 	"gopkg.in/mgo.v2/bson"
+	"log"
+	"time"
+
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
 )
 
 //mongo DB
@@ -103,7 +107,8 @@ func GetAllBlogs(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	blogs := connectAndQueryBlog()
+	//blogs := connectAndQueryBlog()
+	blogs := FirestoreConnect()
 	json.NewEncoder(w).Encode(blogs)
 
 }
@@ -192,6 +197,59 @@ func connectAndQueryBlog() []Blogs {
 	return blogs
 }
 
+// Application HealthCheck
+func Firestoretest(w http.ResponseWriter, r *http.Request) {
+	setupResponse(&w, r)
+
+	if (*r).Method == "GET" {
+
+	}else if (*r).Method == "POST" {
+		fmt.Println("NOT ALLOW for this method")
+	}
+
+	fmt.Println(("GET method for firestore test is working"))
+
+	blogs := FirestoreConnect()
+	//fmt.Println(blogs)
+	json.NewEncoder(w).Encode(blogs)
+
+}
+
+func FirestoreConnect() []Blogs {
+	fmt.Println("Firestore connect is executing")
+	sa := option.WithCredentialsFile("firestore-pomt.json")
+	app, err := firebase.NewApp(context.Background(), nil, sa)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	client, err := app.Firestore(context.Background())
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	q := client.Collection("regblogs")
+	docs, err := q.Documents(context.Background()).GetAll()
+	if err != nil {
+		// TODO: Handle error.
+	}
+
+	var blogs []Blogs
+	for _, doc := range docs {
+		//fmt.Println(doc)
+
+		var blog Blogs
+		if err := doc.DataTo(&blog); err != nil {
+			// TODO: Handle error.
+		}
+		//fmt.Println(blog)
+		blogs = append(blogs, blog)
+
+	}
+	fmt.Println("Blogs query is completed")
+	return blogs
+}
+
 // main function to boot up everything
 func main() {
 	fmt.Println("Prepare web-services latest")
@@ -205,6 +263,7 @@ func main() {
 	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")
 	router.HandleFunc("/api/getallblogs", GetAllBlogs).Methods("GET")
 	router.HandleFunc("/App-HealthCheck", GetAppHealthCheck).Methods("GET")
+	router.HandleFunc("/api/firestoretest", Firestoretest).Methods("GET")
 
 	fmt.Println("Web-services are starting")
 	log.Fatal(http.ListenAndServe(":8087", router))
